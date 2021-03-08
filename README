@@ -1,0 +1,4 @@
+Diffbreaker allows the user to create incremental patches
+from a single unified diff interactively using curses.
+
+First appeared in NetBSD's pkgsrc http://www.pkgsrc.org
