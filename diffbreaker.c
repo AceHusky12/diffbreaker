@@ -39,7 +39,8 @@
 
 ssize_t finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 		     ssize_t first, ssize_t part, ssize_t origoffs,
-		     ssize_t newoffs, ssize_t last, ssize_t pos);
+		     ssize_t newoffs, ssize_t last, ssize_t pos,
+		     char *comments);
 ssize_t find_next_marker(ssize_t current, int direction);
 ssize_t update_context(ssize_t lines, ssize_t current, ssize_t last);
 ssize_t get_context(ssize_t current, ssize_t last, ssize_t num);
@@ -232,7 +233,7 @@ next:
 ssize_t
 finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 		 ssize_t first, ssize_t part, ssize_t origoffs,
-		 ssize_t newoffs, ssize_t last, ssize_t pos)
+		 ssize_t newoffs, ssize_t last, ssize_t pos, char *comments)
 {
 	ssize_t blanks, orig, addition, l;
 	ssize_t fixoffs, j, begblanks;
@@ -260,10 +261,18 @@ finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 			addition++;
 		}
 	}
-	sprintf(NEWBUF(fixoffs), "@@ %ld,%ld +%ld,%ld @@\n",
-	    origoffs - first + part + (begblanks - context),
-	    orig + blanks, newoffs +
-	    first - part - (begblanks - context), addition + blanks);
+	if (strlen(comments) > 0) {
+		sprintf(NEWBUF(fixoffs), "@@ %ld,%ld +%ld,%ld @@%s",
+		    origoffs - first + part + (begblanks - context),
+		    orig + blanks, newoffs +
+		    first - part - (begblanks - context), addition + blanks,
+		    comments);
+	} else {
+		sprintf(NEWBUF(fixoffs), "@@ %ld,%ld +%ld,%ld @@\n",
+		    origoffs - first + part + (begblanks - context),
+		    orig + blanks, newoffs +
+		    first - part - (begblanks - context), addition + blanks);
+	}
 
 	newaction[secthead] = action[pos];
 
@@ -277,6 +286,7 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 	ssize_t final = 0, context = 0, fixoffs = 0, i, j, adj;
 	bool found = false, writecount = false;
 	char tmpstr[100], tmpstr1[100];
+	char comments[1024] = "";
 	FILE *myfile = NULL;
 
 	j = 0;
@@ -285,11 +295,12 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 		case 6:		/* --- */
 			if (found == true) {
 				j = finalize_context(context, j, fixoffs, first,
-				    part, origoffs, newoffs, last, i);
+				    part, origoffs, newoffs, last, i, comments);
 				final = j;
 				last = i;
 				found = false;
 			}
+			comments[0] = 0;
 			first = 0;
 			if (writecount == false)
 				j = final;
@@ -299,7 +310,7 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 		case 5:		/* @@ */
 			if (found == true) {
 				j = finalize_context(context, j, fixoffs, first,
-				    part, origoffs, newoffs, last, i);
+				    part, origoffs, newoffs, last, i, comments);
 				final = j;
 				last = i;
 				found = false;
@@ -312,7 +323,20 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 			// check the sscanf return?
 			tmpstr[0] = '\0';
 			tmpstr1[0] = '\0';
-			sscanf(ORIGBUF(i), "@@ %s %s\n", tmpstr, tmpstr1);
+			sscanf(ORIGBUF(i), "@@ %s %s @@\n", tmpstr, tmpstr1);
+
+			int tmplen = 0, c = 0;
+			while (tmplen < strlen(ORIGBUF(i)) && c < 4) {
+				if (*(ORIGBUF(i) + tmplen) == '@')
+					c++;
+				tmplen++;
+			}
+			if (tmplen < strlen(ORIGBUF(i))) {
+				memcpy(comments, ORIGBUF(i) + tmplen,
+				    strlen(ORIGBUF(i)) - tmplen); 
+				comments[strlen(ORIGBUF(i)) - tmplen] = 0;
+			} else
+				comments[0] = 0;
 			char *rest = NULL;
 			origoffs = strtol(tmpstr, &rest, 10);
 			rest++;
@@ -360,7 +384,7 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 	}
 	if (context && found)
 		j = finalize_context(context, j, fixoffs, first,
-		    part, origoffs, newoffs, last, i);
+		    part, origoffs, newoffs, last, i, comments);
 
 	if (writecount == false && found == false)
 		j = final;
