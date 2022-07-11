@@ -41,7 +41,7 @@ ssize_t finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 		     ssize_t first, ssize_t part, ssize_t origoffs,
 		     ssize_t newoffs, ssize_t last, ssize_t pos,
 		     char *comments);
-ssize_t find_next_marker(ssize_t current, int direction);
+ssize_t find_next_marker(int desired, ssize_t current, int direction);
 ssize_t update_context(ssize_t lines, ssize_t current, ssize_t last);
 ssize_t get_context(ssize_t current, ssize_t last, ssize_t num);
 void print_buffer(ssize_t myLine, ssize_t dispLines);
@@ -154,12 +154,14 @@ mark_dirty(void)
 #define DIR_UP		-1
 #define DIR_DOWN         1
 ssize_t
-find_next_marker(ssize_t current, int direction)
+find_next_marker(int desired, ssize_t current, int direction)
 {
 	ssize_t newline = current;
 	while (newline >= 0 && newline < totalLines - 1) {
 		newline += direction;
-		if (action[newline] != 0)
+		if (desired == 0 && action[newline] != 0)
+			break;
+		else if (desired != 0 && action[newline] == desired)
 			break;
 	}
 	if (newline < 0 || newline >= totalLines - 1)
@@ -687,19 +689,23 @@ main(int argc, char *argv[])
 		myKey = (char)getch();
 		if (myKey == 'q')
 			break;
+		if (myKey == 'p' && currentLine > 0)
+			currentLine = find_next_marker(6, currentLine, DIR_UP);
 		if (myKey == 'k' && currentLine > 0)
-			currentLine = find_next_marker(currentLine, DIR_UP);
+			currentLine = find_next_marker(0, currentLine, DIR_UP);
 		if (myKey == ' ') {
 			if (action[currentLine] == 1)
 				action[currentLine] = 2;
 			else if (action[currentLine] == 2)
 				action[currentLine] = 1;
 			if (currentLine < totalLines -1)
-				currentLine = find_next_marker(currentLine,
+				currentLine = find_next_marker(0, currentLine,
 				    DIR_DOWN);
 		}
+		if (myKey == 'n' && currentLine < totalLines - 1)
+			currentLine = find_next_marker(6, currentLine, DIR_DOWN);
 		if (myKey == 'j' && currentLine < totalLines - 1)
-			currentLine = find_next_marker(currentLine, DIR_DOWN);
+			currentLine = find_next_marker(0, currentLine, DIR_DOWN);
 		if (myKey == 'G')
 			currentLine = totalLines - 1;
 		if (myKey == 'g')
