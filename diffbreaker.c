@@ -30,6 +30,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -650,6 +651,9 @@ main(int argc, char *argv[])
 	uint32_t filesuffix = 1;
 	int ch;
 	char myKey;
+	regex_t tosearch;
+	char searchstr[1024] = "";
+	char oldsearchstr[1024] = "";
 
 	dispLine = 0;
 	currentLine = 0;
@@ -689,6 +693,66 @@ main(int argc, char *argv[])
 		myKey = (char)getch();
 		if (myKey == 'q')
 			break;
+		if (myKey == '/' || myKey == '?') {
+			COLORTEXT(2);
+			mvprintw(promptLine - 1, 0, "%c", myKey);
+			for (int n = COLS - 1; n > 0; n--)
+				mvprintw(promptLine - 1, n, " ");
+			refresh();
+			size_t i = currentLine;
+			if (scanf("%[^\n]", searchstr) > 0) {
+				if (regcomp(&tosearch, searchstr, 0) != 0)
+					continue;
+				snprintf(oldsearchstr, sizeof(oldsearchstr),
+				    "%s", searchstr);
+				oldsearchstr[strlen(oldsearchstr)] = 0;
+			} else if (strlen(oldsearchstr) > 0) {
+				regfree(&tosearch);
+				if (regcomp(&tosearch, oldsearchstr, 0) != 0)
+					continue;
+				if (myKey == '/' && i < totalLines)
+					i++;
+				else if (myKey == '?' && i > 0)
+					i--;
+			}
+			
+			if (myKey == '/') {
+				while (i < totalLines) {
+					char searchin[1024];
+					sscanf(ORIGBUF(i), "%[^\n]", searchstr);
+					if (regexec(&tosearch, searchstr, 0,
+					    NULL, 0) == 0) {
+						 if (action[i] == 0) {
+						currentLine =
+						    find_next_marker(0, i,
+						        DIR_DOWN);
+						} else
+							currentLine = i;
+						break;	
+					}
+					i++;
+				}
+			} else {
+				while (i > 0) {
+					char searchin[1024];
+					sscanf(ORIGBUF(i), "%[^\n]", searchstr);
+					if (regexec(&tosearch, searchstr, 0,
+					    NULL, 0) == 0) {
+						if  (action[i] == 0) {
+						currentLine =
+						    find_next_marker(0, i,
+						         DIR_UP);
+						} else
+							currentLine = i;
+						break;	
+					}
+					i--;
+				}
+			}
+
+			regfree(&tosearch);
+					
+		}
 		if (myKey == 'p' && currentLine > 0)
 			currentLine = find_next_marker(6, currentLine, DIR_UP);
 		if (myKey == 'k' && currentLine > 0)
