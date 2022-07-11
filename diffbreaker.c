@@ -178,7 +178,9 @@ update_context(ssize_t lines, ssize_t current, ssize_t last)
 			l++;
 			continue;
 		}
-		sprintf(NEWBUF(j), "%s", ORIGBUF(last + l++));
+		sprintf(NEWBUF(j), "%s", ORIGBUF(last + l));
+		if (action[last + l] == 5 || action[last + l++] == 6)
+			break;
 		*NEWBUF(j++) = ' ';
 		if (last + l > totalLines)
 			break;
@@ -214,8 +216,8 @@ get_context(ssize_t current, ssize_t last, ssize_t num)
 next:
 		if (context == tmpcontext) {
 			j = update_context(tmpcontext, j, i - context - 1);
-			tmpcontext = 0;
 			num -= tmpcontext;
+			tmpcontext = 0;
 		}
 		if (action[i - l] == 6 || action[i - l] == 7)
 			break;
@@ -245,7 +247,9 @@ finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 	firstf = false;
 	begblanks = 0;
 	j = update_context(context, j, last);
-	blanks = orig = addition = 0;
+	blanks = 0;
+	orig =  0;
+	addition = 0;
 	for (l = secthead + 1; l < j; l++) {
 		if (*NEWBUF(l) == ' ') {
 			if (!firstf)
@@ -261,6 +265,9 @@ finalize_context(ssize_t context, ssize_t current, ssize_t secthead,
 			addition++;
 		}
 	}
+	if (begblanks < context)
+		first -= context;
+
 	if (strlen(comments) > 0) {
 		sprintf(NEWBUF(fixoffs), "@@ %ld,%ld +%ld,%ld @@%s",
 		    origoffs - first + part + (begblanks - context),
