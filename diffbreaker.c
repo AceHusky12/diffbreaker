@@ -336,7 +336,7 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 			tmpstr1[0] = '\0';
 			sscanf(ORIGBUF(i), "@@ %s %s @@\n", tmpstr, tmpstr1);
 
-			size_t tmplen = 0
+			size_t tmplen = 0;
 			int c = 0;
 			while (tmplen < strlen(ORIGBUF(i)) && c < 4) {
 				if (*(ORIGBUF(i) + tmplen) == '@')
