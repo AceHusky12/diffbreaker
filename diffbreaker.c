@@ -336,7 +336,8 @@ parse_buffer(char *outfile, bool incremental, uint32_t *filesuffix)
 			tmpstr1[0] = '\0';
 			sscanf(ORIGBUF(i), "@@ %s %s @@\n", tmpstr, tmpstr1);
 
-			int tmplen = 0, c = 0;
+			size_t tmplen = 0
+			int c = 0;
 			while (tmplen < strlen(ORIGBUF(i)) && c < 4) {
 				if (*(ORIGBUF(i) + tmplen) == '@')
 					c++;
@@ -604,7 +605,6 @@ search(char searchKey, ssize_t current)
 	static char oldsearchstr[1024] = "";
 	regex_t tosearch;
 	char searchstr[1024] = "";
-	char searchin[1024] = "";
 	ssize_t result = current, i = current;
 
 	COLORTEXT(2);
