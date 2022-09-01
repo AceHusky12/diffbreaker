@@ -78,6 +78,10 @@ static ssize_t currentLine, totalLines, cpl;
 	do {					\
 		if (has_colors())		\
 			attrset(COLOR_PAIR(x));	\
+		else if (x == 3)		\
+			attrset(A_UNDERLINE);	\
+		else if (x == 5)		\
+			attrset(A_BOLD);	\
 		else				\
 			attrset(A_REVERSE);	\
 	} while (0)						
