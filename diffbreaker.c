@@ -510,15 +510,16 @@ read_data_to_buffer(char *myFile)
 				if (*ORIGBUF(j) == '-' && *(ORIGBUF(j) + 1) ==
 				    '-' && *(ORIGBUF(j) + 2) == '-')
 					myaction = 6;
-				else if (*ORIGBUF(j) == '+' && *(ORIGBUF(j) + 1) ==
-				    '+' && *(ORIGBUF(j) + 2) == '+')
+				else if (*ORIGBUF(j) == '+' &&
+				    *(ORIGBUF(j) + 1) == '+' &&
+				    *(ORIGBUF(j) + 2) == '+')
 					myaction = 7;
 				else if (*ORIGBUF(j) == '+' && myaction != 7)
 					myaction = 1;
 				else if (*ORIGBUF(j) == '-' && myaction != 6)
 					myaction = 1;
-				else if (*ORIGBUF(j) == '@' && *(ORIGBUF(j) + 1) ==
-				    '@')
+				else if (*ORIGBUF(j) == '@' &&
+				    *(ORIGBUF(j) + 1) == '@')
 					myaction = 5;
 				else if (*ORIGBUF(j) != ' ')
 					myaction = 4;
@@ -573,14 +574,17 @@ print_buffer(ssize_t myLine, ssize_t dispLines)
 			for (m = 0; m < llen; m++) {
 				if ((tmpline[m] < ' ') && (tmpline[m] != '\t')
 				    && (tmpline[m] != '\n')) {
-					snprintf(tmpstr+p, (size_t)(1024 - p), "%s",
-					    unctrl(tmpline[m]));
-					p += (int)strlen(unctrl(tmpline[m])) - 1;
+					snprintf(tmpstr+p, (size_t)(1024 - p),
+					    "%s", unctrl(tmpline[m]));
+					p += (int)strlen(unctrl(tmpline[m]))
+					    - 1;
 				} else if (tmpline[m] == '\t') {
-					snprintf(tmpstr+p, (size_t)(1024 - p),  "    ");
+					snprintf(tmpstr+p, (size_t)(1024 - p),
+					    "    ");
 					p += 3;
 				} else
-					snprintf(tmpstr+p, (size_t)(1024 - p), "%c", tmpline[m]);
+					snprintf(tmpstr+p, (size_t)(1024 - p),
+					    "%c", tmpline[m]);
 				p++;
 			}
 			p = 0;
@@ -775,9 +779,11 @@ main(int argc, char *argv[])
 				    DIR_DOWN);
 		}
 		if (myKey == 'n' && currentLine < totalLines - 1)
-			currentLine = find_next_marker(6, currentLine, DIR_DOWN);
+			currentLine = find_next_marker(6, currentLine,
+			    DIR_DOWN);
 		if (myKey == 'j' && currentLine < totalLines - 1)
-			currentLine = find_next_marker(0, currentLine, DIR_DOWN);
+			currentLine = find_next_marker(0, currentLine,
+			    DIR_DOWN);
 		if (myKey == 'G')
 			currentLine = totalLines - 1;
 		if (myKey == 'g')
