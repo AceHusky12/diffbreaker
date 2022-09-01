@@ -76,7 +76,7 @@ static ssize_t currentLine, totalLines, cpl;
 
 #define COLORTEXT(x)				\
 	do {					\
-		if (has_colors())			\
+		if (has_colors())		\
 			attrset(COLOR_PAIR(x));	\
 		else				\
 			attrset(A_REVERSE);	\
@@ -84,7 +84,7 @@ static ssize_t currentLine, totalLines, cpl;
 
 #define NORMALTEXT				\
 	do {					\
-		if (has_colors())			\
+		if (has_colors())		\
 			attrset(COLOR_PAIR(1));	\
 		else				\
 			attrset(A_NORMAL);	\
