@@ -610,15 +610,15 @@ search(char searchKey, ssize_t current)
 	regex_t tosearch;
 	char searchstr[1024] = "";
 	ssize_t result = current, i = current;
+	int n;
 
 	COLORTEXT(2);
-	mvprintw(promptLine - 1, 0, "%c", searchKey);
-	for (int n = COLS - 1; n > 0; n--)
-		mvprintw(promptLine - 1, n, " ");
+	mvprintw(promptLine, 0, "%c", searchKey);
+	for (n = COLS - 1; n > 0; n--)
+		mvprintw(promptLine, n, " ");
 	refresh();
 
-
-	if (scanf("%[^\n]", searchstr) > 0) {
+	if (scanw("%[^\n]", searchstr) != ERR) {
 		if (regcomp(&tosearch, searchstr, 0) != 0)
 			return current;
 		snprintf(oldsearchstr, sizeof(oldsearchstr), "%s", searchstr);
@@ -759,6 +759,7 @@ main(int argc, char *argv[])
 			break;
 		if (myKey == '/' || myKey == '?') {
 			currentLine = search(myKey, currentLine);
+			print_buffer(currentLine, (ssize_t)(displayLines + 1));
 		}
 		if (myKey == 'p' && currentLine > 0)
 			currentLine = find_next_marker(6, currentLine, DIR_UP);
