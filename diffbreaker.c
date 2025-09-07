@@ -508,11 +508,13 @@ read_data_to_buffer(char *myFile)
 			if (data == '\n') {
 				myaction = 0;
 				if (*ORIGBUF(j) == '-' && *(ORIGBUF(j) + 1) ==
-				    '-' && *(ORIGBUF(j) + 2) == '-')
+				    '-' && *(ORIGBUF(j) + 2) == '-'
+				    && *(ORIGBUF(j) + 3) == ' ')
 					myaction = 6;
 				else if (*ORIGBUF(j) == '+' &&
 				    *(ORIGBUF(j) + 1) == '+' &&
-				    *(ORIGBUF(j) + 2) == '+')
+				    *(ORIGBUF(j) + 2) == '+'
+				    && *(ORIGBUF(j) + 3) == ' ')
 					myaction = 7;
 				else if (*ORIGBUF(j) == '+' && myaction != 7)
 					myaction = 1;
